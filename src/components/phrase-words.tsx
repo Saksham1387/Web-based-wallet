@@ -2,30 +2,30 @@
 
 import { useState } from "react";
 import { Copy, ChevronDown, ChevronUp } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 interface SecretPhraseDropdownProps {
-  words: string[]; 
+  words: string[];
 }
 
 export default function SecretPhraseDropdown({
   words,
 }: SecretPhraseDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
 
-  //   const words = [
-  //     'sunset', 'hockey', 'nominee', 'bring',
-  //     'awful', 'trouble', 'warrior', 'nice',
-  //     'immense', 'rude', 'subway', 'exotic'
-  //   ]
-
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigator.clipboard.writeText(words.join(" "));
-    setCopied(true);
-    toast.success("Copied to clipboard!");
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = () => {
+    try {
+      toast({
+        title: "Copied !",
+      });
+      navigator.clipboard.writeText(words.join(" "));
+    } catch (error) {
+      toast({
+        title: "Failed to Copy :(",
+      });
+      console.error("Copy failed:", error);
+    }
   };
 
   const toggleDropdown = () => {
@@ -48,10 +48,7 @@ export default function SecretPhraseDropdown({
         </div>
 
         {isOpen && (
-          <div
-            className="bg-zinc-900 rounded-lg p-4 space-y-4"
-            onClick={handleCopy}
-          >
+          <div className="bg-zinc-900 rounded-lg p-4 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {words.map((word, index) => (
                 <div
@@ -62,11 +59,12 @@ export default function SecretPhraseDropdown({
                 </div>
               ))}
             </div>
-
-            <p className="text-sm text-gray-400 flex items-center gap-2">
-              <Copy className="h-4 w-4" />
-              Click Anywhere To Copy
-            </p>
+            <button onClick={handleCopy}>
+              <p className="text-sm text-gray-400 flex items-center gap-2 cursor-pointer">
+                <Copy className="h-4 w-4" />
+                Copy the Mnemonic
+              </p>
+            </button>
           </div>
         )}
       </div>

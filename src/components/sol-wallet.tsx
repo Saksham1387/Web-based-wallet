@@ -19,14 +19,15 @@ interface Wallet {
 }
 const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
 
-export function SolanaWallet({ mnemonic }: any) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function SolanaWallet({ mnemonic }: { mnemonic: any }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isUpdatingBalances, setIsUpdatingBalances] = useState(false);
-
-  async function getBalance(publicKey: any) {
-    const wallet = new PublicKey(publicKey);
+  
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async function getBalance(publicKey: string | any) {
+    const wallet = new PublicKey(publicKey );
     const balance = await connection.getBalance(wallet);
     const finalBalance = balance / LAMPORTS_PER_SOL;
     return finalBalance;
@@ -47,19 +48,19 @@ export function SolanaWallet({ mnemonic }: any) {
   const updateAllBalances = useCallback(async () => {
     if (wallets.length === 0) return;
 
-    setIsUpdatingBalances(true);
+    
     try {
       const updatedWallets = await Promise.all(
         wallets.map(async (wallet) => ({
           ...wallet,
-          balance: await getBalance(wallet.publicKey)
+          balance: await getBalance(wallet.publicKey),
         }))
       );
       setWallets(updatedWallets);
     } catch (error) {
       console.error("Failed to update balances:", error);
     } finally {
-      setIsUpdatingBalances(false);
+     
     }
   }, [wallets]);
 
@@ -70,7 +71,8 @@ export function SolanaWallet({ mnemonic }: any) {
   const createWallet = useCallback(async () => {
     setIsLoading(true);
     try {
-      const seed = await mnemonicToSeed(mnemonic);
+      const mon:string = mnemonic || ""
+      const seed = await mnemonicToSeed(mon);
       const path = `m/44'/501'/${currentIndex}'/0'`;
       const derivedSeed = derivePath(path, seed.toString("hex")).key;
       const secret = nacl.sign.keyPair.fromSeed(derivedSeed).secretKey;
@@ -79,14 +81,13 @@ export function SolanaWallet({ mnemonic }: any) {
       const newWallet: Wallet = {
         publicKey: keypair.publicKey.toBase58(),
         privateKey: Buffer.from(keypair.secretKey).toString("hex"),
-        balance: 0, // In a real app, you'd fetch the actual balance
+        balance: 0, 
       };
 
       setWallets((prevWallets) => [...prevWallets, newWallet]);
       setCurrentIndex((prevIndex) => prevIndex + 1);
     } catch (error) {
       console.error("Failed to create wallet:", error);
-      // In a real app, you'd want to show an error message to the user
     } finally {
       setIsLoading(false);
     }
@@ -106,7 +107,6 @@ export function SolanaWallet({ mnemonic }: any) {
           <Button
             onClick={() => {
               localStorage.removeItem("wallets");
-              const wal = localStorage.getItem("wallets");
               setWallets([]);
             }}
             disabled={isLoading}
@@ -116,7 +116,10 @@ export function SolanaWallet({ mnemonic }: any) {
           </Button>
         </div>
         <div>
-            <p className="text-gray-500 text-center">The balances fetched are from Devnet you can aidrop some SOL to the address and see the changes here</p>
+          <p className="text-gray-500 text-center">
+            The balances fetched are from Devnet you can aidrop some SOL to the
+            address and see the changes here
+          </p>
         </div>
 
         {wallets.length > 0 ? (
