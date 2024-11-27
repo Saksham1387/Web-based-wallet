@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { generateMnemonic } from "bip39";
 import SecretPhraseDropdown from "./phrase-words";
